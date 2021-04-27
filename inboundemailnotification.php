@@ -173,7 +173,7 @@ function inboundemailnotification_civicrm_pageRun(&$page) {
     if ($newRepliesCount > 0) {
       $lastTime = Civi::settings()->get('inbound_email_notification_time');
       // if there is no lastdismissal time set
-      if (empty($lastTime) || (strtotime('now') > strtotime($lastTime) + 1)) {
+      if (empty($lastTime) || (strtotime('now') > (strtotime($lastTime) + 3600))) {
         Civi::settings()->set('inbound_email_notification_time', date('YmdHis'));
         $statusMessage = ts('New Emails Have Been Received
           <br />
