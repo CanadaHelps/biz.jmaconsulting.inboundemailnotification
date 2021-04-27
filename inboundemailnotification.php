@@ -170,7 +170,6 @@ function inboundemailnotification_civicrm_postJob($job, $params, $result) {
 function inboundemailnotification_civicrm_pageRun(&$page) {
   if (CRM_Core_Permission::check('CH admin inbound email notification')) {
     $newRepliesCount = Civi::settings()->get('inbound_email_notification_count');
-    $newRepliesCount = 2;
     if ($newRepliesCount > 0) {
       $lastTime = Civi::settings()->get('inbound_email_notification_time');
       // if there is no lastdismissal time set
