@@ -163,6 +163,8 @@ function inboundemailnotification_civicrm_postJob($job, $params, $result) {
     
     if ($newRepliesCount > 0) {
       Civi::settings()->set('inbound_email_notification_count', $newRepliesCount);
+      // reset last notification time to trigger notification immediatly
+      $lastTime = Civi::settings()->set('inbound_email_notification_time', '');
     }
   }
 }

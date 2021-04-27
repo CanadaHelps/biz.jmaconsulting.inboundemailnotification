@@ -77,6 +77,7 @@ class CRM_Inboundemailnotification_ExtensionUtil {
   
   public static function dismissInboundNotification() {
     Civi::settings()->set('last_inbound_email_notification_dismissal', date('YmdHis'));
+    Civi::settings()->set('inbound_email_notification_count', 0);
     CRM_Utils_System::redirect(CRM_Core_Session::singleton()->popUserContext());
   }
 
