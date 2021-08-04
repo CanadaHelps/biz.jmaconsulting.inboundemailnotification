@@ -56,7 +56,22 @@ class CRM_Activity_Form_Task_Archive extends CRM_Activity_Form_Task {
       'options' => ['limit' => 1],
     ]) ?: 'Scheduled';
     $activityStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_status_id', $activityStatus);
-    $url = CRM_Utils_System::url('civicrm/activity/search', "reset=1&force=1&activity_type_id={$emailActivityTypeId}&activity_status_id={$activityStatusID}");
+    $lastDismissalTime = Civi::settings()->get('last_inbound_email_notification_dismissal');
+
+    // update the 'New Replies' count
+    $params = [
+      'activity_type_id' => $emailActivityTypeId,
+      'status_id' => $activityStatus,
+    ];
+    if (!empty($lastDismissalTime)) {
+      $params['activity_date_time'] = ['>=' => $lastDismissalTime];
+    }
+    $newRepliesCount = civicrm_api3('Activity', 'getcount', $params);
+    Civi::settings()->set('inbound_email_notification_count', $newRepliesCount);
+    // reset last notification time to trigger notification immediatly
+    $lastTime = Civi::settings()->set('inbound_email_notification_time', '');
+
+    $url = CRM_Utils_System::url('civicrm/activity/search', "reset=1&force=1&activity_type_id={$emailActivityTypeId}&activity_status_id={$activityStatusID}&activity_date_time_low={$lastDismissalTime}");
     CRM_Utils_System::redirect($url);
   }
 

@@ -164,7 +164,7 @@ function inboundemailnotification_civicrm_postJob($job, $params, $result) {
     if ($newRepliesCount > 0) {
       Civi::settings()->set('inbound_email_notification_count', $newRepliesCount);
       // reset last notification time to trigger notification immediatly
-      $lastTime = Civi::settings()->set('inbound_email_notification_time', '');
+      Civi::settings()->set('inbound_email_notification_time', '');
     }
   }
 }
@@ -183,6 +183,7 @@ function inboundemailnotification_civicrm_pageRun(&$page) {
           'options' => ['limit' => 1],
         ]) ?: 'Scheduled';
         $activityStatusID = CRM_Core_PseudoConstant::getKey('CRM_Activity_BAO_Activity', 'activity_status_id', $activityStatus);
+        $lastDismissalTime = Civi::settings()->get('last_inbound_email_notification_dismissal');
         Civi::settings()->set('inbound_email_notification_time', date('YmdHis'));
         $statusMessage = ts('New Emails Have Been Received
           <br />
@@ -190,7 +191,7 @@ function inboundemailnotification_civicrm_pageRun(&$page) {
           <a href="%1">View</a>&nbsp;&nbsp;&nbsp;&nbsp;
           <a href="%2">Dismiss</a>
         ', [
-          1 => CRM_Utils_System::url('civicrm/activity/search', "reset=1&force=1&activity_type_id={$emailActivityTypeId}&activity_status_id={$activityStatusID}"),
+          1 => CRM_Utils_System::url('civicrm/activity/search', "reset=1&force=1&activity_type_id={$emailActivityTypeId}&activity_status_id={$activityStatusID}&activity_date_time_low={$lastDismissalTime}"),
           2 => CRM_Utils_System::url('civicrm/inbound-email-dismiss'),
         ]);
         $statusTitle = $newRepliesCount == 1 ? ts('1 New Reply') : ts('%1 New Replies', [1 => $newRepliesCount]);
