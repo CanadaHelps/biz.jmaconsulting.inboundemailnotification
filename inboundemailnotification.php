@@ -160,6 +160,12 @@ function inboundemailnotification_civicrm_postJob($job, $params, $result) {
     }
 
     $newRepliesCount = civicrm_api3('Activity', 'getcount', $params);
+    //CRM-1416: Add logs at the time of schedule job run for inbound_email_notification_count update
+    $params['return'] = array("id", "activity_type_id", "activity_date_time", "status_id");
+    $debugErrorActivity = civicrm_api3('Activity', 'get', $params);
+    $debugErrorActivity['params'] = $params;
+    $debugErrorActivity['newrepliesCount'] = $newRepliesCount;
+    CRM_Core_Error::debug_var('Track new replies activity error-2 (after cron job run count update)', $debugErrorActivity);
     
     if ($newRepliesCount > 0) {
       Civi::settings()->set('inbound_email_notification_count', $newRepliesCount);
@@ -194,6 +200,19 @@ function inboundemailnotification_civicrm_pageRun(&$page) {
           1 => CRM_Utils_System::url('civicrm/activity/search', "reset=1&force=1&activity_type_id={$emailActivityTypeId}&activity_status_id={$activityStatusID}&activity_date_time_low={$lastDismissalTime}"),
           2 => CRM_Utils_System::url('civicrm/inbound-email-dismiss'),
         ]);
+        //CRM-1416: Add log when "New email reply" notification pops up
+        $params = [
+          'activity_type_id' => $emailActivityTypeId,
+          'status_id' => $activityStatusID,
+        ];
+        if (!empty($lastDismissalTime)) {
+          $params['activity_date_time'] = ['>=' => $lastDismissalTime];
+        }
+        $params['return'] = array("id", "activity_type_id", "activity_date_time", "status_id");
+        $debugErrorActivity = civicrm_api3('Activity', 'get', $params);
+        $debugErrorActivity['params'] = $params;
+        $debugErrorActivity['newrepliesCount'] = $newRepliesCount;
+        CRM_Core_Error::debug_var('Track new replies activity error-3 (CH admin notification popup)', $debugErrorActivity);
         $statusTitle = $newRepliesCount == 1 ? ts('1 New Reply') : ts('%1 New Replies', [1 => $newRepliesCount]);
         CRM_Core_Session::setStatus($statusMessage, $statusTitle, 'alert');
       }
